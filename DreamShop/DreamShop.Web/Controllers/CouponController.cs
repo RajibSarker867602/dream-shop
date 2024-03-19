@@ -67,10 +67,12 @@ namespace DreamShop.Web.Controllers
             var existingCoupon = await _couponService.DeleteCoupon(coupon.Id);
             if (existingCoupon != null && existingCoupon.IsSuccess)
             {
+                TempData["success"] = "Coupon deleted successfully.";
                 return RedirectToAction(nameof(Index));
             }
             else
             {
+                TempData["error"] = "Coupon delete operation failed!";
                 return NotFound();
             }
         }
