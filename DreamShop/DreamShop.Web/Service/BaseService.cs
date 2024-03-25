@@ -1,7 +1,5 @@
 ﻿using System.Net;
 using System.Text;
-using System.Text.Json.Serialization;
-using Azure;
 using DreamShop.Web.Models;
 using DreamShop.Web.Models.DTOs;
 using DreamShop.Web.Service.IService;
