@@ -1,4 +1,4 @@
-﻿namespace DreamShop.Services.AuthAPI.Models.DTOs
+﻿namespace DreamShop.Web.Models.DTOs
 {
     public class UserRegistrationRequestDto
     {

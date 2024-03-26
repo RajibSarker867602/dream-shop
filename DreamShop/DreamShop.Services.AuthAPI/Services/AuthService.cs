@@ -79,5 +79,19 @@ namespace DreamShop.Services.AuthAPI.Services
                 Token = token
             };
         }
+
+        public async Task<bool> AssignUserRole(string email, string roleName)
+        {
+            var existingUser = await _db.Users.FirstOrDefaultAsync(c => c.Email.ToLower() == email.ToLower());
+            if(existingUser is null) return false;
+
+            if (!await _roleManager.RoleExistsAsync(roleName))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+
+            var result = await _userManager.AddToRoleAsync(existingUser, roleName);
+            return result.Succeeded;
+        }
     }
 }

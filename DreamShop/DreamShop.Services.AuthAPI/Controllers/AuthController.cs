@@ -25,7 +25,7 @@ namespace DreamShop.Services.AuthAPI.Controllers
             if (requestDto == null) return BadRequest("Invalid input request.");
 
             var isError = await _authService.UserRegistration(requestDto);
-            if (!string.IsNullOrEmpty(isError))
+            if (string.IsNullOrEmpty(isError))
             {
                 _responseDto.IsSuccess = false;
                 _responseDto.Message = isError;
@@ -48,6 +48,18 @@ namespace DreamShop.Services.AuthAPI.Controllers
 
             _responseDto.Result = isLoggedIn;
             return Ok(_responseDto);
+        }
+
+        [HttpPost("assignUserRole")]
+        public async Task<IActionResult> AssignUserRole([FromBody] UserRegistrationRequestDto requestDto)
+        {
+            var result = await _authService.AssignUserRole(requestDto.Email, requestDto.Role.ToUpper());
+            if (!result)
+            {
+                _responseDto.IsSuccess =false;
+                _responseDto.Message = "Error occured to assign role";
+            }
+            return Ok(_responseDto);    
         }
     }
 }

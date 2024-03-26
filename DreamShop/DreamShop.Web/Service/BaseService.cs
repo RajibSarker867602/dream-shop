@@ -50,12 +50,19 @@ namespace DreamShop.Web.Service
                 }
 
                 apiResponse = await client.SendAsync(message);
+                var responseContent = await apiResponse.Content.ReadAsStringAsync();
+                var apiResponseDto = JsonConvert.DeserializeObject<ResponseDto>(responseContent);
                 switch (apiResponse.StatusCode)
                 {
+
                     case HttpStatusCode.NotFound:
                         return new() { IsSuccess = false, Message = "Not found!" };
                     case HttpStatusCode.Unauthorized:
-                        return new() { IsSuccess = false, Message = "You're not authorized to access this request!" };
+                        return new()
+                        {
+                            IsSuccess = false,
+                            Message = apiResponseDto.Message ?? "You're not authorized to access this request!"
+                        };
                     case HttpStatusCode.Forbidden:
                         return new() { IsSuccess = false, Message = "Sorry! this request is forbidden." };
                     case HttpStatusCode.BadRequest:
@@ -63,8 +70,6 @@ namespace DreamShop.Web.Service
                     case HttpStatusCode.InternalServerError:
                         return new() { IsSuccess = false, Message = "Internal server error!" };
                     default:
-                        var responseContent = await apiResponse.Content.ReadAsStringAsync();
-                        var apiResponseDto = JsonConvert.DeserializeObject<ResponseDto>(responseContent);
                         return apiResponseDto;
                 }
             }

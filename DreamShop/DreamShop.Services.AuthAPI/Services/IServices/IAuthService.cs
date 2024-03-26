@@ -7,5 +7,6 @@ namespace DreamShop.Services.AuthAPI.Services.IServices
     {
         Task<string> UserRegistration(UserRegistrationRequestDto requestDto);
         Task<UserLoginResponseDto> UserLogin(UserLoginRequestDto request);
+        Task<bool> AssignUserRole(string email, string roleName);
     }
 }
