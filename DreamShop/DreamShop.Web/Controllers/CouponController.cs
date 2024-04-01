@@ -1,11 +1,13 @@
 ﻿using DreamShop.Web.Models.DTOs;
 using DreamShop.Web.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json;
 
 namespace DreamShop.Web.Controllers
 {
+    [Authorize]
     public class CouponController : Controller
     {
         private readonly ICouponService _couponService;

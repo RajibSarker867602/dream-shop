@@ -66,7 +66,9 @@ namespace DreamShop.Services.AuthAPI.Services
             var isValid = await _userManager.CheckPasswordAsync(user, request.Password);
             if (user is null || !isValid) return new UserLoginResponseDto() { User = null, Token = "" };
 
-            var token = _jwtTokenGenerator.GenerateToken(user);
+            // get all the roles for the user have
+            var roles = await _userManager.GetRolesAsync(user);
+            var token = _jwtTokenGenerator.GenerateToken(user, roles);
             return new UserLoginResponseDto()
             {
                 User = new()

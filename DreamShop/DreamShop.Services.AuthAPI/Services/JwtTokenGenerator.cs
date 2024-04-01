@@ -17,7 +17,7 @@ namespace DreamShop.Services.AuthAPI.Services
         {
             _jwtOptions = jwtOptions.Value;
         }
-        public string GenerateToken(ApplicationUser user)
+        public string GenerateToken(ApplicationUser user, IEnumerable<string> roles)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -28,6 +28,8 @@ namespace DreamShop.Services.AuthAPI.Services
                 new Claim(JwtRegisteredClaimNames.Name, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
             };
+
+            claims.AddRange(roles.Select(c=> new Claim(ClaimTypes.Role, c)));
 
             var tokenDescriptor = new SecurityTokenDescriptor()
             {

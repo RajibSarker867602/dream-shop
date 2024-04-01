@@ -26,7 +26,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(options =>
     {
         options.ExpireTimeSpan = TimeSpan.FromHours(10);
-        options.LoginPath = "/Auth/Login";
+        options.LoginPath = "/Auth/Login";      // redirect to this url if not logged in
         options.AccessDeniedPath = "/Auth/AccessDenied";
     });
 
