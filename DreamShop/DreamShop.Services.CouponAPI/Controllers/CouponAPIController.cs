@@ -3,6 +3,7 @@ using AutoMapper;
 using DreamShop.Services.CouponAPI.Data;
 using DreamShop.Services.CouponAPI.Models.DTOs;
 using DreamShop.Services.CouponAPI.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace DreamShop.Services.CouponAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CouponAPIController : ControllerBase
     {
         private readonly CouponAPIDbContext _db;
@@ -76,6 +78,7 @@ namespace DreamShop.Services.CouponAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Post([FromBody] CouponDto coupon)
         {
             if (coupon == null) return BadRequest("Invalid input request.");
@@ -97,6 +100,7 @@ namespace DreamShop.Services.CouponAPI.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Put([FromBody] CouponDto coupon)
         {
             if (coupon == null) return BadRequest("Invalid input request.");

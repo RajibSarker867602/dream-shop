@@ -11,19 +11,27 @@ namespace DreamShop.Web.Service
     public class BaseService : IBaseService
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ITokenProvider _tokenProvider;
 
-        public BaseService(IHttpClientFactory httpClientFactory)
+        public BaseService(IHttpClientFactory httpClientFactory, ITokenProvider tokenProvider)
         {
             _httpClientFactory = httpClientFactory;
+            _tokenProvider = tokenProvider;
         }
-        public async Task<ResponseDto> SendAsync(RequestDto requestDto)
+        public async Task<ResponseDto> SendAsync(RequestDto requestDto, bool withToken = true)
         {
             try
             {
                 var client = _httpClientFactory.CreateClient("DreamShopAPI");
                 HttpRequestMessage message = new();
                 message.Headers.Add("Accept", "application/json");
-                //TODO: set token in headers
+                
+                // set token
+                if (withToken)
+                {
+                    var token = _tokenProvider.GetToken();
+                    message.Headers.Add("Authorization", $"Bearer {token}");
+                }
 
                 message.RequestUri = new Uri(requestDto.Url);
                 if (requestDto.Data != null)
@@ -61,7 +69,8 @@ namespace DreamShop.Web.Service
                         return new()
                         {
                             IsSuccess = false,
-                            Message = apiResponseDto.Message ?? "You're not authorized to access this request!"
+                            Message = apiResponseDto != null && !string.IsNullOrEmpty(apiResponseDto.Message) ?
+                                apiResponseDto.Message : "You're not authorized to access this request!"
                         };
                     case HttpStatusCode.Forbidden:
                         return new() { IsSuccess = false, Message = "Sorry! this request is forbidden." };

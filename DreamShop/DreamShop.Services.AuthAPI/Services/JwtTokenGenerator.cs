@@ -29,7 +29,7 @@ namespace DreamShop.Services.AuthAPI.Services
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
             };
 
-            claims.AddRange(roles.Select(c=> new Claim(ClaimTypes.Role, c)));
+            claims.AddRange(roles.Select(c => new Claim(ClaimTypes.Role, c)));
 
             var tokenDescriptor = new SecurityTokenDescriptor()
             {

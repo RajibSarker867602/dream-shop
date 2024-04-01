@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace DreamShop.Web.Controllers
 {
-    [Authorize]
+    
     public class CouponController : Controller
     {
         private readonly ICouponService _couponService;
@@ -24,6 +24,10 @@ namespace DreamShop.Web.Controllers
             if (data != null && data.IsSuccess)
             {
                 coupons = JsonConvert.DeserializeObject<List<CouponDto>>(Convert.ToString(data.Result));
+            }
+            else
+            {
+                TempData["error"] = data.Message;
             }
 
             return View(coupons);
