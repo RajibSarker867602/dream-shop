@@ -6,6 +6,7 @@ namespace DreamShop.Web.Utilities
     public class Utility
     {
         public static string CouponAPIBaseUrl { get; set; }
+        public static string ProductAPIBaseUrl { get; set; }
         public static string AuthAPIBaseUrl { get; set; }
         public const string AdminRole = "ADMIN";
         public const string CustomerRole = "CUSTOMER";
