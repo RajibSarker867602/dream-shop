@@ -12,7 +12,7 @@ namespace DreamShop.Services.ProductAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class ProductAPIController : ControllerBase
     {
         private readonly ProductAPIDbContext _db;
