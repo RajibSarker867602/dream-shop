@@ -3,6 +3,7 @@ using DreamShop.Services.ShoppingCartAPI.Data;
 using DreamShop.Services.ShoppingCartAPI.Models;
 using DreamShop.Services.ShoppingCartAPI.Models.Dto;
 using DreamShop.Services.ShoppingCartAPI.Models.DTOs;
+using DreamShop.Services.ShoppingCartAPI.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +16,54 @@ namespace DreamShop.Services.ShoppingCartAPI.Controllers
     {
         private readonly ShoppingCartAPIDbContext _db;
         private readonly IMapper _mapper;
+        private readonly IProductService _productService;
         private ResponseDto _responseDto;
 
-        public CartAPIController(ShoppingCartAPIDbContext db, IMapper mapper)
+        public CartAPIController(ShoppingCartAPIDbContext db, IMapper mapper, IProductService productService)
         {
             _db = db;
             _mapper = mapper;
+            _productService = productService;
             _responseDto = new ResponseDto();
+        }
+
+        [HttpGet("{userId}/carts")]
+        public async Task<ResponseDto> GetUserCarts(string userId)
+        {
+            try
+            {
+                if (userId is null)
+                {
+                    _responseDto.IsSuccess = false;
+                    _responseDto.Message = $"User id is not provided! Please provide valid user id.";
+                    return _responseDto;
+                }
+
+                var cart = await _db.CartHeaders.Include(c=> c.CartDetails).FirstOrDefaultAsync(c => c.UserId == userId);
+                if (cart is null)
+                {
+                    _responseDto.IsSuccess = false;
+                    _responseDto.Message = $"No shopping cart is found for the user id: {userId}";
+                    return _responseDto;
+                }
+
+                var dataToReturn = _mapper.Map<CartHeaderDto>(cart);
+                var products = await _productService.GetProductsAsync();
+                foreach (var details in dataToReturn.CartDetails)
+                {
+                    details.Product = products.FirstOrDefault(c => c.Id == details.ProductId);
+                    dataToReturn.CartTotal += details.Product.Price * details.Count;
+                }
+
+                _responseDto.Result = dataToReturn;
+            }
+            catch (Exception e)
+            {
+                _responseDto.IsSuccess = false;
+                _responseDto.Message = e.Message;
+            }
+
+            return _responseDto;
         }
 
         [HttpPost("upsert")]
@@ -63,6 +105,41 @@ namespace DreamShop.Services.ShoppingCartAPI.Controllers
                 _responseDto.Message = e.Message.ToString();
                 _responseDto.IsSuccess = false;
                 return _responseDto;
+            }
+
+            return _responseDto;
+        }
+
+        [HttpPost("removeCart")]
+        public async Task<ResponseDto> RemoveCart([FromBody] long detailsId)
+        {
+            try
+            {
+                var detailsToRemove = await _db.CartDetails.FirstOrDefaultAsync(c => c.Id == detailsId);
+                if (detailsToRemove is null)
+                {
+                    _responseDto.IsSuccess = false;
+                    _responseDto.Message = $"No cart details found by this id: {detailsId}";
+                    return _responseDto;
+                }
+
+                var totalCartCount = await _db.CartDetails.CountAsync(c => c.CartHeaderId == detailsToRemove.CartHeaderId);
+                _db.Remove(detailsToRemove);
+                if (totalCartCount == 1)
+                {
+                    var headerToRemove =
+                        await _db.CartHeaders.FirstOrDefaultAsync(c => c.Id == detailsToRemove.CartHeaderId);
+                    _db.Remove(headerToRemove);
+                }
+
+                await _db.SaveChangesAsync();
+                _responseDto.Message = "Delete operation successfully completed.";
+                _responseDto.IsSuccess = true;
+            }
+            catch (Exception e)
+            {
+                _responseDto.Message = e.Message;
+                _responseDto.IsSuccess = false;
             }
 
             return _responseDto;
