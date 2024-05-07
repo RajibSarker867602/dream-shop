@@ -1,6 +1,7 @@
 using AutoMapper;
 using DreamShop.Services.ShoppingCartAPI.Data;
 using DreamShop.Services.ShoppingCartAPI.Extensions;
+using DreamShop.Services.ShoppingCartAPI.IService;
 using DreamShop.Services.ShoppingCartAPI.Models;
 using DreamShop.Services.ShoppingCartAPI.Services;
 using DreamShop.Services.ShoppingCartAPI.Services.Interface;
@@ -49,8 +50,13 @@ builder.Services.AddHttpClient("product",
     c => c.BaseAddress
         = new Uri(builder.Configuration["ServiceUrls:ProductAPI"]));
 
+builder.Services.AddHttpClient("coupon",
+    c => c.BaseAddress
+        = new Uri(builder.Configuration["ServiceUrls:CouponAPI"]));
+
 // service registration
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICouponService, CouponService>();
 
 // for object circular loop
 builder.Services.AddControllers().AddNewtonsoftJson(options =>

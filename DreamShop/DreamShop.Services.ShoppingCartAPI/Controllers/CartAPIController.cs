@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using DreamShop.Services.ShoppingCartAPI.Data;
+using DreamShop.Services.ShoppingCartAPI.IService;
 using DreamShop.Services.ShoppingCartAPI.Models;
 using DreamShop.Services.ShoppingCartAPI.Models.Dto;
 using DreamShop.Services.ShoppingCartAPI.Models.DTOs;
@@ -16,13 +17,15 @@ namespace DreamShop.Services.ShoppingCartAPI.Controllers
     {
         private readonly ShoppingCartAPIDbContext _db;
         private readonly IMapper _mapper;
+        private readonly ICouponService _couponService;
         private readonly IProductService _productService;
         private ResponseDto _responseDto;
 
-        public CartAPIController(ShoppingCartAPIDbContext db, IMapper mapper, IProductService productService)
+        public CartAPIController(ShoppingCartAPIDbContext db, IMapper mapper, ICouponService couponService, IProductService productService)
         {
             _db = db;
             _mapper = mapper;
+            _couponService = couponService;
             _productService = productService;
             _responseDto = new ResponseDto();
         }
@@ -53,6 +56,16 @@ namespace DreamShop.Services.ShoppingCartAPI.Controllers
                 {
                     details.Product = products.FirstOrDefault(c => c.Id == details.ProductId);
                     dataToReturn.CartTotal += details.Product.Price * details.Count;
+                }
+
+                if (!string.IsNullOrEmpty(cart.CouponCode))
+                {
+                    var existingCoupon = await _couponService.GetCouponByCode(cart.CouponCode);
+                    if (existingCoupon != null && dataToReturn.CartTotal > existingCoupon.MinAmount)
+                    {
+                        dataToReturn.CartTotal -= existingCoupon.DiscountAmount;
+                        dataToReturn.Discount = existingCoupon.DiscountAmount;
+                    }
                 }
 
                 _responseDto.Result = dataToReturn;
@@ -135,6 +148,31 @@ namespace DreamShop.Services.ShoppingCartAPI.Controllers
                 await _db.SaveChangesAsync();
                 _responseDto.Message = "Delete operation successfully completed.";
                 _responseDto.IsSuccess = true;
+            }
+            catch (Exception e)
+            {
+                _responseDto.Message = e.Message;
+                _responseDto.IsSuccess = false;
+            }
+
+            return _responseDto;
+        }
+
+        [HttpPost("addCoupon")]
+        public async Task<ResponseDto> AddCoupon([FromBody] CartHeaderDto cart)
+        {
+            try
+            {
+                var existingCart = await _db.CartHeaders.FirstOrDefaultAsync(c => c.UserId == cart.UserId);
+                if (existingCart is null)
+                {
+                    _responseDto.Message = $"No cart information is found for the user id: {cart.UserId}";
+                    _responseDto.IsSuccess = false;
+                    return _responseDto;
+                }
+
+                existingCart.CouponCode = cart.CouponCode;
+                await _db.SaveChangesAsync();
             }
             catch (Exception e)
             {

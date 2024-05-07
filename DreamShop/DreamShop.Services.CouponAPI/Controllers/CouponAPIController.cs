@@ -60,6 +60,7 @@ namespace DreamShop.Services.CouponAPI.Controllers
         }
 
         [HttpGet("{code}/code")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetByCode(string code)
         {
             if (string.IsNullOrEmpty(code)) return BadRequest("Invalid input request.");
