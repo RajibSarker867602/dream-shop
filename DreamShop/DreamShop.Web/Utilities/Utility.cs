@@ -8,6 +8,7 @@ namespace DreamShop.Web.Utilities
         public static string CouponAPIBaseUrl { get; set; }
         public static string ProductAPIBaseUrl { get; set; }
         public static string AuthAPIBaseUrl { get; set; }
+        public static string CartAPIBaseUrl { get; set; }
         public const string AdminRole = "ADMIN";
         public const string CustomerRole = "CUSTOMER";
         public const string TokenCookie = "JwtToken";

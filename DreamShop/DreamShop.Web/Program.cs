@@ -12,10 +12,12 @@ builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<ICouponService, CouponService>();
 builder.Services.AddHttpClient<IProductService, ProductService>();
 builder.Services.AddHttpClient<IAuthService, AuthService>();
+builder.Services.AddHttpClient<ICartService, CartService>();
 
 Utility.CouponAPIBaseUrl = builder.Configuration["ServiceUrls:CouponAPI"];
 Utility.ProductAPIBaseUrl = builder.Configuration["ServiceUrls:ProductAPI"];
 Utility.AuthAPIBaseUrl = builder.Configuration["ServiceUrls:AuthAPI"];
+Utility.CartAPIBaseUrl = builder.Configuration["ServiceUrls:CartAPI"];
 
 // service registrations
 builder.Services.AddScoped<IBaseService, BaseService>();
@@ -23,6 +25,7 @@ builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenProvider, TokenProvider>();
+builder.Services.AddScoped<ICartService, CartService>();
 
 // registering .net identity cookie authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

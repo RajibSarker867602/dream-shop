@@ -5,6 +5,7 @@ using DreamShop.Web.Models.DTOs;
 using DreamShop.Web.Service.IService;
 using DreamShop.Web.Utilities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace DreamShop.Web.Controllers
 {
@@ -12,11 +13,13 @@ namespace DreamShop.Web.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IProductService _productService;
+        private readonly ICartService _cartService;
 
-        public HomeController(ILogger<HomeController> logger, IProductService productService)
+        public HomeController(ILogger<HomeController> logger, IProductService productService, ICartService cartService)
         {
             _logger = logger;
             _productService = productService;
+            _cartService = cartService;
         }
 
         public async Task<IActionResult> Index()
@@ -46,6 +49,38 @@ namespace DreamShop.Web.Controllers
             }
 
             return View(_product);  
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ActionName("Details")]
+        public async Task<IActionResult> Details(ProductDto productDto)
+        {
+            CartHeaderDto cart = new CartHeaderDto()
+            {
+                UserId = User.Claims.Where(c => c.Type == JwtRegisteredClaimNames.Sub)?.FirstOrDefault()?.Value,
+                CartDetails = new List<CartDetailsDto>()
+                {
+                    new CartDetailsDto()
+                    {
+                        ProductId = productDto.Id,
+                        Count = productDto.Count
+                    }
+                }
+            };
+
+            var response = await _cartService.UpsertCart(cart);
+            if (response != null && response.IsSuccess)
+            {
+                TempData["success"] = "Item successfully added to cart.";
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                TempData["error"] = "Item could not be added to cart!";
+            }
+
+            return View(productDto);
         }
 
         public IActionResult Privacy()
